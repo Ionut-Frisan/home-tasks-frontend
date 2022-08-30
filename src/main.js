@@ -13,8 +13,8 @@ import ToastService from 'primevue/toastservice';
 
 
 import router from "./router/index.js";
-//axios.defaults.baseURL = 'https://home-tasks-2.herokuapp.com'
-axios.defaults.baseURL = 'http://localhost:8000'
+axios.defaults.baseURL = 'https://home-tasks-2.herokuapp.com'
+//axios.defaults.baseURL = 'http://localhost:8000'
 
 
 const app = createApp(App);
