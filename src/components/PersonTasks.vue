@@ -1,48 +1,59 @@
 <template>
   <tab-view>
     <tab-panel header="Future">
-      <div class="day-task" v-for="day in futureTasks">
+      <div class="day-task" v-for="(day, dayIndex) in futureTasks" :key="day.id + dayIndex">
         <Panel :toggleable="true" :collapsed="true" :header="getHeaderName(day)">
-          <div class="person-task" v-for="(task, index) in day.tasks">
+          <div class="add-new-task-wrapper" style="display: flex">
+            <InputText v-model="newTask" placeholder="Add new task for this day" type="text" class="p-inputtext-sm" v-if='true' style="position: relative"></InputText>
+            <Button icon="pi pi-plus" class="p-button-rounded p-button-text" @click="addTask(day.id)"/>
+          </div>
+          <div class="person-task" v-for="(task, index) in day.tasks" :key="task.id">
             <div>
               <i :class="getIconClasses(task)"></i>
               <span style="padding-left: 10px"> {{ task.name }} </span>
             </div>
             <div class="person-tasks-actions">
-              <Button icon="pi pi-info-circle" class="p-button-rounded p-button-text" v-tooltip="getFormattedComments(task)"/>
-              <Button icon="pi pi-comment" class="p-button-rounded p-button-text" :disabled="isTaskDisabled(day)" @click="toggle($event, index)"/>
+              <Button icon="pi pi-info-circle" class="p-button-rounded p-button-text"
+                      v-tooltip="getFormattedComments(task)"/>
+              <Button icon="pi pi-comment" class="p-button-rounded p-button-text" @click="toggle($event, day.id, task.id)"/>
               <OverlayPanel appendTo="body" ref="open" :showCloseIcon="true">
-                <div style="display: flex">
+                <div style="display: flex" :key="index">
                   <input-text v-model="comment"></input-text>
-                  <Button @click="addComment(day.id, task.id, comment)">Add</Button>
+                  <Button @click="addComment()">Add</Button>
                 </div>
               </OverlayPanel>
-              <Button icon="pi pi-check-square" class="p-button-rounded p-button-text p-button-success" :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Done')"/>
-              <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger" :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Canceled')"/>
+              <Button icon="pi pi-check-square" class="p-button-rounded p-button-text p-button-success"
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Done')"/>
+              <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger"
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Canceled')"/>
             </div>
           </div>
         </Panel>
       </div>
     </tab-panel>
     <tab-panel header="Past">
-      <div class="day-task" v-for="day in pastTasks">
+      <div class="day-task" v-for="(day, index) in pastTasks" :key="day.id + index">
         <Panel :toggleable="true" :collapsed="true" :header="getHeaderName(day)">
-          <div class="person-task" v-for="(task, index) in day.tasks">
+          <div class="person-task" v-for="(task, index) in day.tasks" :key="task.id">
             <div>
               <i :class="getIconClasses(task)"></i>
               <span style="padding-left: 10px"> {{ task.name }} </span>
             </div>
             <div class="person-tasks-actions">
-              <Button icon="pi pi-info-circle" class="p-button-rounded p-button-text" v-tooltip="getFormattedComments(task)"/>
-              <Button icon="pi pi-comment" class="p-button-rounded p-button-text" :disabled="isTaskDisabled(day)" @click="toggle($event, index)"/>
+              <Button icon="pi pi-info-circle" class="p-button-rounded p-button-text"
+                      v-tooltip="getFormattedComments(task)"/>
+              <Button icon="pi pi-comment" class="p-button-rounded p-button-text" :disabled="isTaskDisabled(day)"
+                      @click="toggle($event, day.id, task.id)"/>
               <OverlayPanel appendTo="body" ref="open" :showCloseIcon="true">
                 <div style="display: flex">
                   <input-text v-model="comment"></input-text>
-                  <Button @click="addComment(day.id, task.id, comment)">Add</Button>
+                  <Button @click="addComment()">Add</Button>
                 </div>
               </OverlayPanel>
-              <Button icon="pi pi-check-square" class="p-button-rounded p-button-text p-button-success" :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Done')"/>
-              <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger" :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Canceled')"/>
+              <Button icon="pi pi-check-square" class="p-button-rounded p-button-text p-button-success"
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Done')"/>
+              <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger"
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Canceled')"/>
             </div>
           </div>
         </Panel>
@@ -72,10 +83,13 @@ const props = defineProps({
   }
 })
 
-const emits = defineEmits(['updateTaskStatus', 'addCommentToTask']);
+const emits = defineEmits(['updateTaskStatus', 'addCommentToTask', 'addTask']);
 
 const open = ref();
 const comment = ref('');
+const selectedDayId = ref('');
+const selectedTaskId = ref('');
+const newTask = ref('');
 
 const futureTasks = computed(() => {
   const today = new Date();
@@ -112,7 +126,7 @@ const isTaskDisabled = (day) => {
 }
 
 const getFormattedComments = (task) => {
-  if(Array.isArray(task?.comments) && task.comments.length){
+  if (Array.isArray(task?.comments) && task.comments.length) {
     return task.comments.reduce((prev, curr) => {
       return prev + curr + '\n'
     }, '')
@@ -123,15 +137,24 @@ const getFormattedComments = (task) => {
 const updateStatus = (dayId, taskId, status) => {
   emits('updateTaskStatus', dayId, taskId, status);
 }
-const addComment = (dayId, taskId, comment) => {
-  if(lastActiveIndex.value !== undefined) open.value[lastActiveIndex.value].hide();
-  emits('addCommentToTask', dayId, taskId, comment);
+
+const addComment = () => {
+  if (lastActiveIndex.value !== undefined) open.value[lastActiveIndex.value].hide();
+  emits('addCommentToTask', selectedDayId.value, selectedTaskId.value, comment.value);
 }
 
-const toggle = (event, index) => {
-  lastActiveIndex.value = index;
-  open.value[index].toggle(event);
+const addTask = (dayId) => {
+  emits('addTask', dayId, newTask.value);
+  newTask.value = ''
+}
+
+const toggle = (event, dayId, taskId) => {
+  selectedDayId.value = dayId
+  selectedTaskId.value = taskId
+
+  open.value[0].toggle(event);
 };
+
 
 </script>
 

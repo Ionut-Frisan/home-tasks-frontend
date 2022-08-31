@@ -1,13 +1,9 @@
 <template>
   <div class="section-wrapper">
     <tab-view @tabChange="onTabChange" :activeIndex="index">
-<!--      <tab-panel header="All">-->
-<!--        <PersonTasks :calendar="calendar" :showPerson="true" @updateTaskStatus="onUpdateTaskStatus"-->
-<!--                     @addCommentToTask="onAddCommentToTask"/>-->
-<!--      </tab-panel>-->
       <tab-panel v-for="(person, index) in ['All', ...computedPersons]" :header="person" >
         <PersonTasks :calendar="computedCalendarItems" @updateTaskStatus="onUpdateTaskStatus" :showPerson="index === 0"
-                     @addCommentToTask="onAddCommentToTask"/>
+                     @addCommentToTask="onAddCommentToTask" @addTask="onAddTask"/>
       </tab-panel>
     </tab-view>
   </div>
@@ -65,8 +61,16 @@ const onAddCommentToTask = async (dayId, taskId, comment) => {
 
 }
 
-const getFilteredDataByPerson = (person) => {
-  return calendar.value.filter((day) => day.person === person);
+const onAddTask = async (dayId, name) => {
+  const response = await axios.post(`/calendar/day/${dayId}`, {
+    name
+  });
+
+  if(response.status === 200) {
+    toast.add({severity:'success', summary: `Task was added.`, life: 3000})
+    calendar.value = response.data;
+  }else toast.add({severity:'error', summary: `Something went wrong`, life: 3000})
+
 }
 
 const computedCalendarItems = computed(() => {

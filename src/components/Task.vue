@@ -31,7 +31,6 @@ const val = ref(props.task.name);
 const inputMode = ref(false);
 
 const updatedValue = computed(() => {
-  console.log(val.value);
   return {...props.task, name: val.value};
 })
 
