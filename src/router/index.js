@@ -16,6 +16,11 @@ const routes = [
     name: "Calendar",
     component: () => import("../views/Calendar.vue"),
   },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "Home",
+    component: () => import("../views/Home.vue"),
+  },
 ];
 
 const router = createRouter({
