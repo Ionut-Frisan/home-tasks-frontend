@@ -41,7 +41,7 @@ import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Calendar from "primevue/calendar";
 
-import {ref, computed, onMounted} from "vue";
+import {ref, computed, onMounted, watch} from "vue";
 import axios from "axios";
 import { useToast } from "primevue/usetoast";
 
@@ -99,6 +99,16 @@ const generateCalendar = async () => {
   if(res.status === 200) toast.add({severity:'success', summary: `Calendar was generated.`, life: 3000})
   else toast.add({severity:'error', summary: `Something went wrong.`, life: 3000})
 }
+
+watch(() => persons.value, (newVal) => {
+  const trollBodeaReplacers = ["Aristina's sister", "Mashing machine", "3rd person", "Valorant Iron", "LOL iron", "Fata de la economic", "Fata care face medicina la fspac", "Fata fara bani"];
+  const possibleBodeaNames = ['andreea', 'bodea', 'coconut', 'andreea bodea', 'bodea andreea', 'andrea']
+  for(const [key, value] of Object.entries(newVal)){
+    if(possibleBodeaNames.includes(value.toLowerCase()) || trollBodeaReplacers.includes(value)){
+      persons.value[key] = trollBodeaReplacers[Math.floor(Math.random() * trollBodeaReplacers.length)];
+    }
+  }
+}, {deep: true})
 
 </script>
 

@@ -23,9 +23,9 @@
                 </div>
               </OverlayPanel>
               <Button icon="pi pi-check-square" class="p-button-rounded p-button-text p-button-success"
-                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Done')"/>
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(task.id, 'done')"/>
               <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger"
-                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Canceled')"/>
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(task.id, 'canceled')"/>
             </div>
           </div>
         </Panel>
@@ -51,9 +51,9 @@
                 </div>
               </OverlayPanel>
               <Button icon="pi pi-check-square" class="p-button-rounded p-button-text p-button-success"
-                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Done')"/>
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(task.id, 'done')"/>
               <Button icon="pi pi-times" class="p-button-rounded p-button-text p-button-danger"
-                      :disabled="isTaskDisabled(day)" @click="updateStatus(day.id, task.id, 'Canceled')"/>
+                      :disabled="isTaskDisabled(day)" @click="updateStatus(task.id, 'canceled')"/>
             </div>
           </div>
         </Panel>
@@ -93,21 +93,35 @@ const newTask = ref('');
 
 const futureTasks = computed(() => {
   const today = new Date();
+  const tdYear = today.getFullYear();
+  const tdMonth = today.getMonth();
+  const tdDay = today.getDay();
   return props.calendar.filter((task) => {
-    return new Date(task.date) > today;
+    const taskDate = new Date(task.date);
+    const taskYear = taskDate.getFullYear()
+    const taskMonth = taskDate.getMonth()
+    const taskDay = taskDate.getDate()
+    return new Date(taskYear, taskMonth, taskDay) >= new Date(tdYear, tdMonth, tdDay)
   })
 })
 
 const pastTasks = computed(() => {
   const today = new Date();
+  const tdYear = today.getFullYear();
+  const tdMonth = today.getMonth();
+  const tdDay = today.getDay();
   return props.calendar.filter((task) => {
-    return new Date(task.date) < today;
+    const taskDate = new Date(task.date);
+    const taskYear = taskDate.getFullYear()
+    const taskMonth = taskDate.getMonth()
+    const taskDay = taskDate.getDate()
+    return new Date(taskYear, taskMonth, taskDay) < new Date(tdYear, tdMonth, tdDay)
   })
 })
 
 const getIconClasses = (task) => {
-  if (task.status === 'Done') return 'pi pi-check-square'
-  if (task.status === 'Canceled') return 'pi pi-times'
+  if (task.status === 'done') return 'pi pi-check-square'
+  if (task.status === 'canceled') return 'pi pi-times'
   return 'pi pi-code'
 }
 
@@ -122,25 +136,26 @@ const getDifferenceBeetweenDates = (first, second) => {
 }
 
 const isTaskDisabled = (day) => {
-  return getDifferenceBeetweenDates(new Date(day.date), new Date()) < -1 || getDifferenceBeetweenDates(new Date(day.date), new Date()) > 1
+  return getDifferenceBeetweenDates(new Date(day.date), new Date()) < -3 || getDifferenceBeetweenDates(new Date(day.date), new Date()) > 1
 }
 
 const getFormattedComments = (task) => {
   if (Array.isArray(task?.comments) && task.comments.length) {
     return task.comments.reduce((prev, curr) => {
-      return prev + curr + '\n'
+      return prev + curr.value + '\n'
     }, '')
+
   }
   return 'No comments for this task!';
 }
 
-const updateStatus = (dayId, taskId, status) => {
-  emits('updateTaskStatus', dayId, taskId, status);
+const updateStatus = (taskId, status) => {
+  emits('updateTaskStatus', taskId, status);
 }
 
 const addComment = () => {
   if (lastActiveIndex.value !== undefined) open.value[lastActiveIndex.value].hide();
-  emits('addCommentToTask', selectedDayId.value, selectedTaskId.value, comment.value);
+  emits('addCommentToTask', selectedTaskId.value, comment.value);
 }
 
 const addTask = (dayId) => {

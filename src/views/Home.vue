@@ -37,38 +37,41 @@ const onChange = (event) => {
 }
 
 
-const onUpdateTaskStatus = async (dayId, taskId, status) => {
-  const response = await axios.put('/calendar/tasks/updateStatus', {
-    dayId, taskId, status
-  });
+const onUpdateTaskStatus = async (taskId, status) => {
+  const response = await axios.put(`/tasks/${taskId}`, {status: status});
 
   if(response.status === 200) {
+    const newCal = await axios.get('/calendar');
+    calendar.value = newCal.data;
     toast.add({severity:'success', summary: `Status updated to ${status}.`, life: 3000})
-    calendar.value = response.data;
   }else toast.add({severity:'error', summary: `Something went wrong.`, life: 3000})
 
 }
 
-const onAddCommentToTask = async (dayId, taskId, comment) => {
-  const response = await axios.put('/calendar/tasks/addComment', {
-    dayId, taskId, comment
+const onAddCommentToTask = async (taskId, comment) => {
+  const response = await axios.post('/comments', {
+    taskId, comment
   });
 
   if(response.status === 200) {
+    const newCal = await axios.get('/calendar');
+    calendar.value = newCal.data;
     toast.add({severity:'success', summary: `Comment was added.`, life: 3000})
-    calendar.value = response.data;
   }else toast.add({severity:'error', summary: `Something went wrong`, life: 3000})
 
 }
 
 const onAddTask = async (dayId, name) => {
-  const response = await axios.post(`/calendar/day/${dayId}`, {
-    name
+  const response = await axios.post(`/tasks`, {
+    name: name,
+    dayId,
+    displayInFE: false,
   });
 
   if(response.status === 200) {
+    const newCal = await axios.get('/calendar');
+    calendar.value = newCal.data;
     toast.add({severity:'success', summary: `Task was added.`, life: 3000})
-    calendar.value = response.data;
   }else toast.add({severity:'error', summary: `Something went wrong`, life: 3000})
 
 }

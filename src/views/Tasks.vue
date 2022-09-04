@@ -52,7 +52,7 @@ const removeTask = async (id) => {
 }
 const updateTask = async (id, newTask) => {
   const res = await axios.put(`/tasks/${id}`, {
-    task: newTask.value
+    name: newTask.value.name
   });
 
   if(res.status === 200){
@@ -63,7 +63,7 @@ const updateTask = async (id, newTask) => {
 
 const addTask = async () => {
   const res = await axios.post('/tasks', {
-    task: newTask.value
+    name: newTask.value.name
   })
   const oldData = tasks.value;
   tasks.value = res.data || oldData;

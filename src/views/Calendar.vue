@@ -34,5 +34,4 @@ const events = computed(() => {
 </script>
 
 <style>
-
 </style>
